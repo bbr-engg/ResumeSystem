@@ -86,7 +86,7 @@ export default function ResumePreview({ resume, className }: ResumePreviewProps)
                       <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                         {position.title}
                         {position.verified && (
-                          <CheckCircle2 size={18} className="text-green-500" title="Verified" />
+                          <CheckCircle2 size={18} className="text-green-500" />
                         )}
                       </h3>
                       <p className="text-blue-600 font-medium">{position.company}</p>
@@ -150,7 +150,7 @@ export default function ResumePreview({ resume, className }: ResumePreviewProps)
                       <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                         {degree.degree}
                         {degree.verified && (
-                          <CheckCircle2 size={18} className="text-green-500" title="Verified" />
+                          <CheckCircle2 size={18} className="text-green-500" />
                         )}
                       </h3>
                       <p className="text-green-600 font-medium">{degree.institution}</p>
