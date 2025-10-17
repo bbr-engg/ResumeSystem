@@ -1,0 +1,166 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model - Core user information and authentication
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  profileImage  String?
+  isVerified    Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Relations
+  resume        Resume?
+  achievements  Achievement[]
+  skills        Skill[]
+  
+  @@map("users")
+}
+
+// Resume Model - Main resume information
+model Resume {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  title           String    @default("Professional Resume")
+  summary         String?
+  objective       String?
+  experience      Json?     // Store work experience as JSON
+  education       Json?     // Store education as JSON
+  templateStyle   String    @default("modern")
+  isPublic        Boolean   @default(false)
+  lastGeneratedAt DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("resumes")
+}
+
+// Achievement Model - Internships, courses, hackathons, projects
+model Achievement {
+  id              String    @id @default(uuid())
+  userId          String
+  type            AchievementType
+  title           String
+  description     String
+  organization    String    // Company, university, platform name
+  location        String?
+  startDate       DateTime
+  endDate         DateTime?
+  duration        String?   // e.g., "3 months", "2 weeks"
+  certificateUrl  String?
+  verificationUrl String?
+  isVerified      Boolean   @default(false)
+  verifiedBy      String?   // Platform/organization that verified
+  verifiedAt      DateTime?
+  skills          String[]  // Skills learned/used
+  highlights      String[]  // Key achievements/responsibilities
+  grade           String?   // For courses
+  position        String?   // For hackathons/competitions
+  projectUrl      String?   // GitHub, live demo, etc.
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("achievements")
+}
+
+// Skill Model - Technical and soft skills
+model Skill {
+  id          String      @id @default(uuid())
+  userId      String
+  name        String
+  category    SkillCategory
+  proficiency SkillLevel  @default(INTERMEDIATE)
+  yearsOfExp  Float?
+  isEndorsed  Boolean     @default(false)
+  endorsedBy  String[]    // Who endorsed this skill
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, name])
+  @@map("skills")
+}
+
+// Integration Model - External platform connections
+model Integration {
+  id            String    @id @default(uuid())
+  userId        String
+  platform      String    // "linkedin", "github", "coursera", etc.
+  platformId    String    // User ID on that platform
+  accessToken   String?   // Encrypted
+  refreshToken  String?   // Encrypted
+  isActive      Boolean   @default(true)
+  lastSyncedAt  DateTime?
+  metadata      Json?     // Additional platform-specific data
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([platform, platformId])
+  @@map("integrations")
+}
+
+// Webhook Log Model - Track incoming webhooks from external platforms
+model WebhookLog {
+  id          String    @id @default(uuid())
+  platform    String
+  eventType   String
+  payload     Json
+  status      String    // "success", "failed", "pending"
+  errorMsg    String?
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+  
+  @@map("webhook_logs")
+}
+
+// Enums
+enum AchievementType {
+  INTERNSHIP
+  COURSE
+  HACKATHON
+  PROJECT
+  CERTIFICATION
+  COMPETITION
+  WORKSHOP
+  VOLUNTEER
+}
+
+enum SkillCategory {
+  PROGRAMMING
+  FRAMEWORK
+  DATABASE
+  TOOLS
+  SOFT_SKILL
+  LANGUAGE
+  DESIGN
+  OTHER
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
